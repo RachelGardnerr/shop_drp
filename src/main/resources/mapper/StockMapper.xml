@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sk.dao.StockMapper">
+    <resultMap id="BaseResultMap" type="com.sk.domain.Stock">
+        <id column="product_bar_code" property="productBarCode" jdbcType="VARCHAR"/>
+        <result column="stock_count" property="stockCount" jdbcType="INTEGER"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="deleted" property="deleted" jdbcType="BIT"/>
+        <result column="lock_key" property="lockKey" jdbcType="VARCHAR"/>
+    </resultMap>
+    <resultMap id="WithCategoryAndSupplierAndStock" type="com.sk.domain.Product">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="bar_code" property="barCode" jdbcType="VARCHAR"/>
+        <result column="supplier_id" property="supplierId" jdbcType="INTEGER"/>
+        <result column="category_id" property="categoryId" jdbcType="INTEGER"/>
+        <result column="product_name" property="productName" jdbcType="VARCHAR"/>
+        <result column="sale_price" property="salePrice" jdbcType="DECIMAL"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="deleted" property="deleted" jdbcType="BIT"/>
+        <!--品类信息-->
+        <association property="category" javaType="com.sk.domain.Category">
+            <id column="id" property="id"/>
+            <result column="category_name" property="categoryName"/>
+        </association>
+        <!--供货商信息-->
+        <association property="supplier" javaType="com.sk.domain.Supplier">
+            <id column="id" property="id"/>
+            <result column="supplier_name" property="supplierName"/>
+            <result column="contacts_name" property="contactsName"/>
+            <result column="tel" property="tel"/>
+        </association>
+        <!--  库存信息-->
+        <association property="stock" javaType="com.sk.domain.Stock">
+            <result column="stock_count" property="stockCount"/>
+        </association>
+    </resultMap>
+    <sql id="WithCategoryAndSupplierAndStock_Column_List">
+        p
+        .
+        bar_code
+        ,
+	p.product_name,
+	p.sale_price,
+	c.category_name,
+	s.contacts_name,
+	s.supplier_name,
+	s.tel,
+	k.stock_count
+    </sql>
+    <sql id="Example_Where_Clause">
+        <where>
+            <foreach collection="oredCriteria" item="criteria" separator="or">
+                <if test="criteria.valid">
+                    <trim prefix="(" suffix=")" prefixOverrides="and">
+                        <foreach collection="criteria.criteria" item="criterion">
+                            <choose>
+                                <when test="criterion.noValue">
+                                    and ${criterion.condition}
+                                </when>
+                                <when test="criterion.singleValue">
+                                    and ${criterion.condition} #{criterion.value}
+                                </when>
+                                <when test="criterion.betweenValue">
+                                    and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                                </when>
+                                <when test="criterion.listValue">
+                                    and ${criterion.condition}
+                                    <foreach collection="criterion.value" item="listItem" open="(" close=")"
+                                             separator=",">
+                                        #{listItem}
+                                    </foreach>
+                                </when>
+                            </choose>
+                        </foreach>
+                    </trim>
+                </if>
+            </foreach>
+        </where>
+    </sql>
+    <sql id="Update_By_Example_Where_Clause">
+        <where>
+            <foreach collection="example.oredCriteria" item="criteria" separator="or">
+                <if test="criteria.valid">
+                    <trim prefix="(" suffix=")" prefixOverrides="and">
+                        <foreach collection="criteria.criteria" item="criterion">
+                            <choose>
+                                <when test="criterion.noValue">
+                                    and ${criterion.condition}
+                                </when>
+                                <when test="criterion.singleValue">
+                                    and ${criterion.condition} #{criterion.value}
+                                </when>
+                                <when test="criterion.betweenValue">
+                                    and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                                </when>
+                                <when test="criterion.listValue">
+                                    and ${criterion.condition}
+                                    <foreach collection="criterion.value" item="listItem" open="(" close=")"
+                                             separator=",">
+                                        #{listItem}
+                                    </foreach>
+                                </when>
+                            </choose>
+                        </foreach>
+                    </trim>
+                </if>
+            </foreach>
+        </where>
+    </sql>
+    <sql id="Base_Column_List">
+        product_bar_code
+        , stock_count, create_time, update_time, deleted, lock_key
+    </sql>
+    <select id="selectWithCategoryAndSupplierAndStock" resultMap="WithCategoryAndSupplierAndStock">
+        select
+        <include refid="WithCategoryAndSupplierAndStock_Column_List"/>
+        FROM
+        biz_product p
+        LEFT JOIN biz_supplier s ON p.supplier_id = s.id
+        LEFT JOIN biz_category c ON p.category_id = c.id
+        LEFT JOIN biz_stock k ON p.bar_code = k.product_bar_code
+    </select>
+    <select id="selectStockByNameWithOtherMsg" resultMap="WithCategoryAndSupplierAndStock">
+        select
+        <include refid="WithCategoryAndSupplierAndStock_Column_List"/>
+        FROM
+        biz_product p
+        LEFT JOIN biz_supplier s ON p.supplier_id = s.id
+        LEFT JOIN biz_category c ON p.category_id = c.id
+        LEFT JOIN biz_stock k ON p.bar_code = k.product_bar_code
+        WHERE p.product_name = #{productName}
+    </select>
+    <select id="selectByExample" resultMap="BaseResultMap" parameterType="com.sk.domain.StockExample">
+        select
+        <if test="distinct">
+            distinct
+        </if>
+        <include refid="Base_Column_List"/>
+        from biz_stock
+        <if test="_parameter != null">
+            <include refid="Example_Where_Clause"/>
+        </if>
+        <if test="orderByClause != null">
+            order by ${orderByClause}
+        </if>
+    </select>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String">
+        select
+        <include refid="Base_Column_List"/>
+        from biz_stock
+        where product_bar_code = #{productBarCode,jdbcType=VARCHAR}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+        delete
+        from biz_stock
+        where product_bar_code = #{productBarCode,jdbcType=VARCHAR}
+    </delete>
+    <delete id="deleteByExample" parameterType="com.sk.domain.StockExample">
+        delete from biz_stock
+        <if test="_parameter != null">
+            <include refid="Example_Where_Clause"/>
+        </if>
+    </delete>
+    <insert id="insert" parameterType="com.sk.domain.Stock">
+        insert into biz_stock (product_bar_code, stock_count, create_time,
+                               update_time, deleted, lock_key)
+        values (#{productBarCode,jdbcType=VARCHAR}, #{stockCount,jdbcType=INTEGER}, #{createTime,jdbcType=TIMESTAMP},
+                #{updateTime,jdbcType=TIMESTAMP}, #{deleted,jdbcType=BIT}, #{lockKey,jdbcType=VARCHAR})
+    </insert>
+    <insert id="insertSelective" parameterType="com.sk.domain.Stock">
+        insert into biz_stock
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="productBarCode != null">
+                product_bar_code,
+            </if>
+            <if test="stockCount != null">
+                stock_count,
+            </if>
+            <if test="createTime != null">
+                create_time,
+            </if>
+            <if test="updateTime != null">
+                update_time,
+            </if>
+            <if test="deleted != null">
+                deleted,
+            </if>
+            <if test="lockKey != null">
+                lock_key,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="productBarCode != null">
+                #{productBarCode,jdbcType=VARCHAR},
+            </if>
+            <if test="stockCount != null">
+                #{stockCount,jdbcType=INTEGER},
+            </if>
+            <if test="createTime != null">
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateTime != null">
+                #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="deleted != null">
+                #{deleted,jdbcType=BIT},
+            </if>
+            <if test="lockKey != null">
+                #{lockKey,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+    <select id="countByExample" parameterType="com.sk.domain.StockExample" resultType="java.lang.Integer">
+        select count(*) from biz_stock
+        <if test="_parameter != null">
+            <include refid="Example_Where_Clause"/>
+        </if>
+    </select>
+    <update id="updateByExampleSelective" parameterType="map">
+        update biz_stock
+        <set>
+            <if test="record.productBarCode != null">
+                product_bar_code = #{record.productBarCode,jdbcType=VARCHAR},
+            </if>
+            <if test="record.stockCount != null">
+                stock_count = #{record.stockCount,jdbcType=INTEGER},
+            </if>
+            <if test="record.createTime != null">
+                create_time = #{record.createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="record.updateTime != null">
+                update_time = #{record.updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="record.deleted != null">
+                deleted = #{record.deleted,jdbcType=BIT},
+            </if>
+            <if test="record.lockKey != null">
+                lock_key = #{record.lockKey,jdbcType=VARCHAR},
+            </if>
+        </set>
+        <if test="_parameter != null">
+            <include refid="Update_By_Example_Where_Clause"/>
+        </if>
+    </update>
+    <update id="updateByExample" parameterType="map">
+        update biz_stock
+        set product_bar_code = #{record.productBarCode,jdbcType=VARCHAR},
+        stock_count = #{record.stockCount,jdbcType=INTEGER},
+        create_time = #{record.createTime,jdbcType=TIMESTAMP},
+        update_time = #{record.updateTime,jdbcType=TIMESTAMP},
+        deleted = #{record.deleted,jdbcType=BIT},
+        lock_key = #{record.lockKey,jdbcType=VARCHAR}
+        <if test="_parameter != null">
+            <include refid="Update_By_Example_Where_Clause"/>
+        </if>
+    </update>
+    <update id="updateByPrimaryKeySelective" parameterType="com.sk.domain.Stock">
+        update biz_stock
+        <set>
+            <if test="stockCount != null">
+                stock_count = #{stockCount,jdbcType=INTEGER},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="deleted != null">
+                deleted = #{deleted,jdbcType=BIT},
+            </if>
+            <if test="lockKey != null">
+                lock_key = #{lockKey,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where product_bar_code = #{productBarCode,jdbcType=VARCHAR}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.sk.domain.Stock">
+        update biz_stock
+        set stock_count = #{stockCount,jdbcType=INTEGER},
+            create_time = #{createTime,jdbcType=TIMESTAMP},
+            update_time = #{updateTime,jdbcType=TIMESTAMP},
+            deleted     = #{deleted,jdbcType=BIT},
+            lock_key    = #{lockKey,jdbcType=VARCHAR}
+        where product_bar_code = #{productBarCode,jdbcType=VARCHAR}
+    </update>
+    <!--<update id="updateStockByProductBarCode" parameterType="com.sk.domain.Stock">-->
+    <!--    update set stock_count = #{count}-->
+    <!--    where product_bar_code = #{productBarCode}-->
+    <!--</update>-->
+</mapper>

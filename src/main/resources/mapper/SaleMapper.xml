@@ -1,0 +1,347 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sk.dao.SaleMapper">
+    <resultMap id="BaseResultMap" type="com.sk.domain.Sale">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="product_bar_code" property="productBarCode" jdbcType="VARCHAR"/>
+        <result column="sale_price" property="salePrice" jdbcType="DECIMAL"/>
+        <result column="sale_date" property="saleDate" jdbcType="VARCHAR"/>
+        <result column="sale_count" property="saleCount" jdbcType="INTEGER"/>
+        <result column="sale_amount" property="saleAmount" jdbcType="DECIMAL"/>
+        <result column="gross_profit" property="grossProfit" jdbcType="DECIMAL"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="deleted" property="deleted" jdbcType="BIT"/>
+    </resultMap>
+    <resultMap id="WithProduct" type="com.sk.domain.Sale">
+        <result column="sale_date" property="saleDate"/>
+        <result column="sale_price" property="salePrice"/>
+        <result column="sale_count" property="saleCount"/>
+        <result column="sale_amount" property="saleAmount"/>
+        <association property="product" javaType="com.sk.domain.Product">
+            <result column="bar_code" property="barCode"/>
+            <result column="product_name" property="productName"/>
+        </association>
+    </resultMap>
+    <sql id="WithSale_Column_List">
+        s.sale_price,
+            s.sale_date,
+            s.sale_count,
+            s.sale_price,
+            s.sale_amount,
+            p.product_name,
+            p.bar_code
+    </sql>
+    <sql id="Example_Where_Clause">
+        <where>
+            <foreach collection="oredCriteria" item="criteria" separator="or">
+                <if test="criteria.valid">
+                    <trim prefix="(" suffix=")" prefixOverrides="and">
+                        <foreach collection="criteria.criteria" item="criterion">
+                            <choose>
+                                <when test="criterion.noValue">
+                                    and ${criterion.condition}
+                                </when>
+                                <when test="criterion.singleValue">
+                                    and ${criterion.condition} #{criterion.value}
+                                </when>
+                                <when test="criterion.betweenValue">
+                                    and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                                </when>
+                                <when test="criterion.listValue">
+                                    and ${criterion.condition}
+                                    <foreach collection="criterion.value" item="listItem" open="(" close=")"
+                                             separator=",">
+                                        #{listItem}
+                                    </foreach>
+                                </when>
+                            </choose>
+                        </foreach>
+                    </trim>
+                </if>
+            </foreach>
+        </where>
+    </sql>
+    <sql id="Update_By_Example_Where_Clause">
+        <where>
+            <foreach collection="example.oredCriteria" item="criteria" separator="or">
+                <if test="criteria.valid">
+                    <trim prefix="(" suffix=")" prefixOverrides="and">
+                        <foreach collection="criteria.criteria" item="criterion">
+                            <choose>
+                                <when test="criterion.noValue">
+                                    and ${criterion.condition}
+                                </when>
+                                <when test="criterion.singleValue">
+                                    and ${criterion.condition} #{criterion.value}
+                                </when>
+                                <when test="criterion.betweenValue">
+                                    and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                                </when>
+                                <when test="criterion.listValue">
+                                    and ${criterion.condition}
+                                    <foreach collection="criterion.value" item="listItem" open="(" close=")"
+                                             separator=",">
+                                        #{listItem}
+                                    </foreach>
+                                </when>
+                            </choose>
+                        </foreach>
+                    </trim>
+                </if>
+            </foreach>
+        </where>
+    </sql>
+    <sql id="Base_Column_List">
+        id
+        , product_bar_code, sale_price, sale_date, sale_count, sale_amount, gross_profit,
+    create_time, update_time, deleted
+    </sql>
+    <select id="selectSale" resultMap="WithProduct">
+        SELECT
+        <include refid="WithSale_Column_List"></include>
+        FROM
+        biz_sale s
+        LEFT JOIN biz_product p ON s.product_bar_code = p.bar_code
+    </select>
+    <select id="selectByExample" resultMap="BaseResultMap" parameterType="com.sk.domain.SaleExample">
+        select
+        <if test="distinct">
+            distinct
+        </if>
+        <include refid="Base_Column_List"/>
+        from biz_sale
+        <if test="_parameter != null">
+            <include refid="Example_Where_Clause"/>
+        </if>
+        <if test="orderByClause != null">
+            order by ${orderByClause}
+        </if>
+    </select>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer">
+        select
+        <include refid="Base_Column_List"/>
+        from biz_sale
+        where id = #{id,jdbcType=INTEGER}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+        delete
+        from biz_sale
+        where id = #{id,jdbcType=INTEGER}
+    </delete>
+    <delete id="deleteByExample" parameterType="com.sk.domain.SaleExample">
+        delete from biz_sale
+        <if test="_parameter != null">
+            <include refid="Example_Where_Clause"/>
+        </if>
+    </delete>
+    <insert id="insert" parameterType="com.sk.domain.Sale">
+        insert into biz_sale (id, product_bar_code, sale_price,
+                              sale_date, sale_count, sale_amount,
+                              gross_profit, create_time, update_time,
+                              deleted)
+        values (#{id,jdbcType=INTEGER}, #{productBarCode,jdbcType=VARCHAR}, #{salePrice,jdbcType=DECIMAL},
+                #{saleDate,jdbcType=VARCHAR}, #{saleCount,jdbcType=INTEGER}, #{saleAmount,jdbcType=DECIMAL},
+                #{grossProfit,jdbcType=DECIMAL}, #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP},
+                #{deleted,jdbcType=BIT})
+    </insert>
+    <insert id="insertSelective" parameterType="com.sk.domain.Sale">
+        insert into biz_sale
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="productBarCode != null">
+                product_bar_code,
+            </if>
+            <if test="salePrice != null">
+                sale_price,
+            </if>
+            <if test="saleDate != null">
+                sale_date,
+            </if>
+            <if test="saleCount != null">
+                sale_count,
+            </if>
+            <if test="saleAmount != null">
+                sale_amount,
+            </if>
+            <if test="grossProfit != null">
+                gross_profit,
+            </if>
+            <if test="createTime != null">
+                create_time,
+            </if>
+            <if test="updateTime != null">
+                update_time,
+            </if>
+            <if test="deleted != null">
+                deleted,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=INTEGER},
+            </if>
+            <if test="productBarCode != null">
+                #{productBarCode,jdbcType=VARCHAR},
+            </if>
+            <if test="salePrice != null">
+                #{salePrice,jdbcType=DECIMAL},
+            </if>
+            <if test="saleDate != null">
+                #{saleDate,jdbcType=VARCHAR},
+            </if>
+            <if test="saleCount != null">
+                #{saleCount,jdbcType=INTEGER},
+            </if>
+            <if test="saleAmount != null">
+                #{saleAmount,jdbcType=DECIMAL},
+            </if>
+            <if test="grossProfit != null">
+                #{grossProfit,jdbcType=DECIMAL},
+            </if>
+            <if test="createTime != null">
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateTime != null">
+                #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="deleted != null">
+                #{deleted,jdbcType=BIT},
+            </if>
+        </trim>
+    </insert>
+    <select id="countByExample" parameterType="com.sk.domain.SaleExample" resultType="java.lang.Integer">
+        select count(*) from biz_sale
+        <if test="_parameter != null">
+            <include refid="Example_Where_Clause"/>
+        </if>
+    </select>
+    <select id="selectByNameWithSale" resultMap="WithProduct">
+        SELECT
+        <include refid="WithSale_Column_List"></include>
+        FROM
+        biz_sale s
+        LEFT JOIN biz_product p ON s.product_bar_code = p.bar_code
+        where p.product_name = #{productName}
+    </select>
+    <update id="updateByExampleSelective" parameterType="map">
+        update biz_sale
+        <set>
+            <if test="record.id != null">
+                id = #{record.id,jdbcType=INTEGER},
+            </if>
+            <if test="record.productBarCode != null">
+                product_bar_code = #{record.productBarCode,jdbcType=VARCHAR},
+            </if>
+            <if test="record.salePrice != null">
+                sale_price = #{record.salePrice,jdbcType=DECIMAL},
+            </if>
+            <if test="record.saleDate != null">
+                sale_date = #{record.saleDate,jdbcType=VARCHAR},
+            </if>
+            <if test="record.saleCount != null">
+                sale_count = #{record.saleCount,jdbcType=INTEGER},
+            </if>
+            <if test="record.saleAmount != null">
+                sale_amount = #{record.saleAmount,jdbcType=DECIMAL},
+            </if>
+            <if test="record.grossProfit != null">
+                gross_profit = #{record.grossProfit,jdbcType=DECIMAL},
+            </if>
+            <if test="record.createTime != null">
+                create_time = #{record.createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="record.updateTime != null">
+                update_time = #{record.updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="record.deleted != null">
+                deleted = #{record.deleted,jdbcType=BIT},
+            </if>
+        </set>
+        <if test="_parameter != null">
+            <include refid="Update_By_Example_Where_Clause"/>
+        </if>
+    </update>
+    <update id="updateByExample" parameterType="map">
+        update biz_sale
+        set id = #{record.id,jdbcType=INTEGER},
+        product_bar_code = #{record.productBarCode,jdbcType=VARCHAR},
+        sale_price = #{record.salePrice,jdbcType=DECIMAL},
+        sale_date = #{record.saleDate,jdbcType=VARCHAR},
+        sale_count = #{record.saleCount,jdbcType=INTEGER},
+        sale_amount = #{record.saleAmount,jdbcType=DECIMAL},
+        gross_profit = #{record.grossProfit,jdbcType=DECIMAL},
+        create_time = #{record.createTime,jdbcType=TIMESTAMP},
+        update_time = #{record.updateTime,jdbcType=TIMESTAMP},
+        deleted = #{record.deleted,jdbcType=BIT}
+        <if test="_parameter != null">
+            <include refid="Update_By_Example_Where_Clause"/>
+        </if>
+    </update>
+    <update id="updateByPrimaryKeySelective" parameterType="com.sk.domain.Sale">
+        update biz_sale
+        <set>
+            <if test="productBarCode != null">
+                product_bar_code = #{productBarCode,jdbcType=VARCHAR},
+            </if>
+            <if test="salePrice != null">
+                sale_price = #{salePrice,jdbcType=DECIMAL},
+            </if>
+            <if test="saleDate != null">
+                sale_date = #{saleDate,jdbcType=VARCHAR},
+            </if>
+            <if test="saleCount != null">
+                sale_count = #{saleCount,jdbcType=INTEGER},
+            </if>
+            <if test="saleAmount != null">
+                sale_amount = #{saleAmount,jdbcType=DECIMAL},
+            </if>
+            <if test="grossProfit != null">
+                gross_profit = #{grossProfit,jdbcType=DECIMAL},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="deleted != null">
+                deleted = #{deleted,jdbcType=BIT},
+            </if>
+        </set>
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.sk.domain.Sale">
+        update biz_sale
+        set product_bar_code = #{productBarCode,jdbcType=VARCHAR},
+            sale_price       = #{salePrice,jdbcType=DECIMAL},
+            sale_date        = #{saleDate,jdbcType=VARCHAR},
+            sale_count       = #{saleCount,jdbcType=INTEGER},
+            sale_amount      = #{saleAmount,jdbcType=DECIMAL},
+            gross_profit     = #{grossProfit,jdbcType=DECIMAL},
+            create_time      = #{createTime,jdbcType=TIMESTAMP},
+            update_time      = #{updateTime,jdbcType=TIMESTAMP},
+            deleted          = #{deleted,jdbcType=BIT}
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+    <update id="updateByBarCode">
+        update biz_sale
+        <trim prefix="set" suffixOverrides=",">
+            <if test="salePrice != null">
+                sale_price = #{salePrice},
+            </if>
+            <if test="saleDate != null">
+                sale_date = #{saleDate},
+            </if>
+            <if test="saleCount != null">
+                sale_count = #{saleCount},
+            </if>
+            <if test="saleAmount != null">
+                sale_amount = #{saleAmount},
+            </if>
+        </trim>
+        where product_bar_code = #{productBarCode}
+    </update>
+</mapper>

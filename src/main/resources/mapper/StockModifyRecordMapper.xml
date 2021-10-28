@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sk.dao.StockModifyRecordMapper">
+    <resultMap id="BaseResultMap" type="com.sk.domain.StockModifyRecord">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="product_bar_code" property="productBarCode" jdbcType="VARCHAR"/>
+        <result column="operator_id" property="operatorId" jdbcType="INTEGER"/>
+        <result column="modify_count" property="modifyCount" jdbcType="INTEGER"/>
+        <result column="modify_type" property="modifyType" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="deleted" property="deleted" jdbcType="BIT"/>
+    </resultMap>
+    <resultMap id="WithProductAndCategory" type="com.sk.domain.StockModifyRecord">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="product_bar_code" property="productBarCode" jdbcType="VARCHAR"/>
+        <result column="operator_id" property="operatorId" jdbcType="INTEGER"/>
+        <result column="modify_count" property="modifyCount" jdbcType="INTEGER"/>
+        <result column="modify_type" property="modifyType" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="deleted" property="deleted" jdbcType="BIT"/>
+        <association property="category" javaType="com.sk.domain.Category">
+            <id column="id" property="id"/>
+            <result column="category_Name" property="categoryName"/>
+        </association>
+        <association property="product" javaType="com.sk.domain.Product">
+            <id column="id" property="id"/>
+            <result column="product_Name" property="productName"/>
+            <result column="bar_Code" property="barCode"/>
+        </association>
+    </resultMap>
+    <sql id="Example_Where_Clause">
+        <where>
+            <foreach collection="oredCriteria" item="criteria" separator="or">
+                <if test="criteria.valid">
+                    <trim prefix="(" suffix=")" prefixOverrides="and">
+                        <foreach collection="criteria.criteria" item="criterion">
+                            <choose>
+                                <when test="criterion.noValue">
+                                    and ${criterion.condition}
+                                </when>
+                                <when test="criterion.singleValue">
+                                    and ${criterion.condition} #{criterion.value}
+                                </when>
+                                <when test="criterion.betweenValue">
+                                    and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                                </when>
+                                <when test="criterion.listValue">
+                                    and ${criterion.condition}
+                                    <foreach collection="criterion.value" item="listItem" open="(" close=")"
+                                             separator=",">
+                                        #{listItem}
+                                    </foreach>
+                                </when>
+                            </choose>
+                        </foreach>
+                    </trim>
+                </if>
+            </foreach>
+        </where>
+    </sql>
+    <sql id="Update_By_Example_Where_Clause">
+        <where>
+            <foreach collection="example.oredCriteria" item="criteria" separator="or">
+                <if test="criteria.valid">
+                    <trim prefix="(" suffix=")" prefixOverrides="and">
+                        <foreach collection="criteria.criteria" item="criterion">
+                            <choose>
+                                <when test="criterion.noValue">
+                                    and ${criterion.condition}
+                                </when>
+                                <when test="criterion.singleValue">
+                                    and ${criterion.condition} #{criterion.value}
+                                </when>
+                                <when test="criterion.betweenValue">
+                                    and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                                </when>
+                                <when test="criterion.listValue">
+                                    and ${criterion.condition}
+                                    <foreach collection="criterion.value" item="listItem" open="(" close=")"
+                                             separator=",">
+                                        #{listItem}
+                                    </foreach>
+                                </when>
+                            </choose>
+                        </foreach>
+                    </trim>
+                </if>
+            </foreach>
+        </where>
+    </sql>
+    <sql id="Base_Column_List">
+        id
+        , product_bar_code, operator_id, modify_count, modify_type, create_time, update_time,
+    deleted
+    </sql>
+    <sql id="WithProductAndCategory_Column_List">
+
+        s
+        .
+        modify_count
+        ,
+s.modify_type,
+s.update_time,
+p.id,
+p.product_name,
+p.bar_code,
+c.id,
+c.category_name
+    </sql>
+    <select id="selectWithProductAndCategory" resultMap="WithProductAndCategory">
+        SELECT s.id,
+               s.modify_count,
+               s.modify_type,
+               s.update_time,
+               p.id,
+               p.product_name,
+               p.bar_code,
+               c.id,
+               c.category_name
+        FROM biz_stock_modify_record s
+                 LEFT JOIN biz_product p ON p.bar_code = s.product_bar_code
+                 LEFT JOIN biz_category c ON c.id = p.category_id
+    </select>
+    <select id="selectByNameWithProductAndCategory" resultMap="WithProductAndCategory">
+        select
+        <include refid="WithProductAndCategory_Column_List"/>
+        FROM
+        biz_stock_modify_record s
+        LEFT JOIN biz_product p ON p.bar_code = s.product_bar_code
+        LEFT JOIN biz_category c ON c.id = p.category_id
+        WHERE p.product_name = #{productName}
+    </select>
+    <select id="selectByExample" resultMap="BaseResultMap" parameterType="com.sk.domain.StockModifyRecordExample">
+        select
+        <if test="distinct">
+            distinct
+        </if>
+        <include refid="Base_Column_List"/>
+        from biz_stock_modify_record
+        <if test="_parameter != null">
+            <include refid="Example_Where_Clause"/>
+        </if>
+        <if test="orderByClause != null">
+            order by ${orderByClause}
+        </if>
+    </select>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer">
+        select
+        <include refid="Base_Column_List"/>
+        from biz_stock_modify_record
+        where id = #{id,jdbcType=INTEGER}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+        delete
+        from biz_stock_modify_record
+        where id = #{id,jdbcType=INTEGER}
+    </delete>
+    <delete id="deleteByExample" parameterType="com.sk.domain.StockModifyRecordExample">
+        delete from biz_stock_modify_record
+        <if test="_parameter != null">
+            <include refid="Example_Where_Clause"/>
+        </if>
+    </delete>
+    <insert id="insert" parameterType="com.sk.domain.StockModifyRecord">
+        insert into biz_stock_modify_record (id, product_bar_code, operator_id,
+                                             modify_count, modify_type, create_time,
+                                             update_time, deleted)
+        values (#{id,jdbcType=INTEGER}, #{productBarCode,jdbcType=VARCHAR}, #{operatorId,jdbcType=INTEGER},
+                #{modifyCount,jdbcType=INTEGER}, #{modifyType,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP},
+                #{updateTime,jdbcType=TIMESTAMP}, #{deleted,jdbcType=BIT})
+    </insert>
+    <insert id="insertSelective" parameterType="com.sk.domain.StockModifyRecord">
+        insert into biz_stock_modify_record
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="productBarCode != null">
+                product_bar_code,
+            </if>
+            <if test="operatorId != null">
+                operator_id,
+            </if>
+            <if test="modifyCount != null">
+                modify_count,
+            </if>
+            <if test="modifyType != null">
+                modify_type,
+            </if>
+            <if test="createTime != null">
+                create_time,
+            </if>
+            <if test="updateTime != null">
+                update_time,
+            </if>
+            <if test="deleted != null">
+                deleted,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=INTEGER},
+            </if>
+            <if test="productBarCode != null">
+                #{productBarCode,jdbcType=VARCHAR},
+            </if>
+            <if test="operatorId != null">
+                #{operatorId,jdbcType=INTEGER},
+            </if>
+            <if test="modifyCount != null">
+                #{modifyCount,jdbcType=INTEGER},
+            </if>
+            <if test="modifyType != null">
+                #{modifyType,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateTime != null">
+                #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="deleted != null">
+                #{deleted,jdbcType=BIT},
+            </if>
+        </trim>
+    </insert>
+    <select id="countByExample" parameterType="com.sk.domain.StockModifyRecordExample" resultType="java.lang.Integer">
+        select count(*) from biz_stock_modify_record
+        <if test="_parameter != null">
+            <include refid="Example_Where_Clause"/>
+        </if>
+    </select>
+    <update id="updateByExampleSelective" parameterType="map">
+        update biz_stock_modify_record
+        <set>
+            <if test="record.id != null">
+                id = #{record.id,jdbcType=INTEGER},
+            </if>
+            <if test="record.productBarCode != null">
+                product_bar_code = #{record.productBarCode,jdbcType=VARCHAR},
+            </if>
+            <if test="record.operatorId != null">
+                operator_id = #{record.operatorId,jdbcType=INTEGER},
+            </if>
+            <if test="record.modifyCount != null">
+                modify_count = #{record.modifyCount,jdbcType=INTEGER},
+            </if>
+            <if test="record.modifyType != null">
+                modify_type = #{record.modifyType,jdbcType=VARCHAR},
+            </if>
+            <if test="record.createTime != null">
+                create_time = #{record.createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="record.updateTime != null">
+                update_time = #{record.updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="record.deleted != null">
+                deleted = #{record.deleted,jdbcType=BIT},
+            </if>
+        </set>
+        <if test="_parameter != null">
+            <include refid="Update_By_Example_Where_Clause"/>
+        </if>
+    </update>
+    <update id="updateByExample" parameterType="map">
+        update biz_stock_modify_record
+        set id = #{record.id,jdbcType=INTEGER},
+        product_bar_code = #{record.productBarCode,jdbcType=VARCHAR},
+        operator_id = #{record.operatorId,jdbcType=INTEGER},
+        modify_count = #{record.modifyCount,jdbcType=INTEGER},
+        modify_type = #{record.modifyType,jdbcType=VARCHAR},
+        create_time = #{record.createTime,jdbcType=TIMESTAMP},
+        update_time = #{record.updateTime,jdbcType=TIMESTAMP},
+        deleted = #{record.deleted,jdbcType=BIT}
+        <if test="_parameter != null">
+            <include refid="Update_By_Example_Where_Clause"/>
+        </if>
+    </update>
+    <update id="updateByPrimaryKeySelective" parameterType="com.sk.domain.StockModifyRecord">
+        update biz_stock_modify_record
+        <set>
+            <if test="productBarCode != null">
+                product_bar_code = #{productBarCode,jdbcType=VARCHAR},
+            </if>
+            <if test="operatorId != null">
+                operator_id = #{operatorId,jdbcType=INTEGER},
+            </if>
+            <if test="modifyCount != null">
+                modify_count = #{modifyCount,jdbcType=INTEGER},
+            </if>
+            <if test="modifyType != null">
+                modify_type = #{modifyType,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="deleted != null">
+                deleted = #{deleted,jdbcType=BIT},
+            </if>
+        </set>
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.sk.domain.StockModifyRecord">
+        update biz_stock_modify_record
+        set product_bar_code = #{productBarCode,jdbcType=VARCHAR},
+            operator_id      = #{operatorId,jdbcType=INTEGER},
+            modify_count     = #{modifyCount,jdbcType=INTEGER},
+            modify_type      = #{modifyType,jdbcType=VARCHAR},
+            create_time      = #{createTime,jdbcType=TIMESTAMP},
+            update_time      = #{updateTime,jdbcType=TIMESTAMP},
+            deleted          = #{deleted,jdbcType=BIT}
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+</mapper>

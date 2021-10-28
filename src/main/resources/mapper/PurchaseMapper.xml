@@ -1,0 +1,399 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sk.dao.PurchaseMapper">
+    <resultMap id="BaseResultMap" type="com.sk.domain.Purchase">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="product_id" property="productId" jdbcType="INTEGER"/>
+        <result column="purchase_date" property="purchaseDate" jdbcType="VARCHAR"/>
+        <result column="pro_date" property="proDate" jdbcType="VARCHAR"/>
+        <result column="exp_date" property="expDate" jdbcType="VARCHAR"/>
+        <result column="purchase_price" property="purchasePrice" jdbcType="DECIMAL"/>
+        <result column="count" property="count" jdbcType="INTEGER"/>
+        <result column="amount" property="amount" jdbcType="DECIMAL"/>
+        <result column="receipt_img" property="receiptImg" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="deleted" property="deleted" jdbcType="BIT"/>
+    </resultMap>
+
+    <resultMap id="WithCategoryAndCategoryAndProduct" type="com.sk.domain.Purchase">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="product_id" property="productId" jdbcType="INTEGER"/>
+        <result column="purchase_date" property="purchaseDate" jdbcType="VARCHAR"/>
+        <result column="pro_date" property="proDate" jdbcType="VARCHAR"/>
+        <result column="exp_date" property="expDate" jdbcType="VARCHAR"/>
+        <result column="purchase_price" property="purchasePrice" jdbcType="DECIMAL"/>
+        <result column="count" property="count" jdbcType="INTEGER"/>
+        <result column="amount" property="amount" jdbcType="DECIMAL"/>
+        <result column="receipt_img" property="receiptImg" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="deleted" property="deleted" jdbcType="BIT"/>
+        <!--品类信息-->
+        <association property="category" javaType="com.sk.domain.Category">
+            <id column="id" property="id"/>
+            <result column="category_name" property="categoryName"/>
+        </association>
+        <!--供应商信息-->
+        <association property="supplier" javaType="com.sk.domain.Supplier">
+            <id column="id" property="id"/>
+            <result column="supplier_name" property="supplierName"/>
+        </association>
+        <!--  商品信息-->
+        <association property="product" javaType="com.sk.domain.Product">
+            <id column="id" property="id"/>
+            <result column="bar_code" property="barCode"/>
+            <result column="product_name" property="productName"/>
+        </association>
+    </resultMap>
+
+    <sql id="Example_Where_Clause">
+        <where>
+            <foreach collection="oredCriteria" item="criteria" separator="or">
+                <if test="criteria.valid">
+                    <trim prefix="(" suffix=")" prefixOverrides="and">
+                        <foreach collection="criteria.criteria" item="criterion">
+                            <choose>
+                                <when test="criterion.noValue">
+                                    and ${criterion.condition}
+                                </when>
+                                <when test="criterion.singleValue">
+                                    and ${criterion.condition} #{criterion.value}
+                                </when>
+                                <when test="criterion.betweenValue">
+                                    and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                                </when>
+                                <when test="criterion.listValue">
+                                    and ${criterion.condition}
+                                    <foreach collection="criterion.value" item="listItem" open="(" close=")"
+                                             separator=",">
+                                        #{listItem}
+                                    </foreach>
+                                </when>
+                            </choose>
+                        </foreach>
+                    </trim>
+                </if>
+            </foreach>
+        </where>
+    </sql>
+    <sql id="Update_By_Example_Where_Clause">
+        <where>
+            <foreach collection="example.oredCriteria" item="criteria" separator="or">
+                <if test="criteria.valid">
+                    <trim prefix="(" suffix=")" prefixOverrides="and">
+                        <foreach collection="criteria.criteria" item="criterion">
+                            <choose>
+                                <when test="criterion.noValue">
+                                    and ${criterion.condition}
+                                </when>
+                                <when test="criterion.singleValue">
+                                    and ${criterion.condition} #{criterion.value}
+                                </when>
+                                <when test="criterion.betweenValue">
+                                    and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                                </when>
+                                <when test="criterion.listValue">
+                                    and ${criterion.condition}
+                                    <foreach collection="criterion.value" item="listItem" open="(" close=")"
+                                             separator=",">
+                                        #{listItem}
+                                    </foreach>
+                                </when>
+                            </choose>
+                        </foreach>
+                    </trim>
+                </if>
+            </foreach>
+        </where>
+    </sql>
+    <sql id="Base_Column_List">
+        id
+        , product_id, purchase_date, pro_date, exp_date, purchase_price, count, amount,
+    receipt_img, create_time, update_time, deleted
+    </sql>
+    <sql id="WithCategoryAndSupplierAndProduct_Column_List">
+        e
+        .
+        id
+        ,
+e.product_id,
+e.exp_date,
+e.purchase_price,
+e.count,
+e.amount,
+p.bar_code,
+p.product_name,
+s.supplier_name,
+c.category_name
+    </sql>
+    <select id="selectWithCategoryAndSupplierAndProduct" resultMap="WithCategoryAndCategoryAndProduct">
+        select
+        <include refid="WithCategoryAndSupplierAndProduct_Column_List"/>
+        FROM
+        biz_purchase e
+        LEFT JOIN biz_product p ON e.product_id = p.id
+        LEFT JOIN biz_supplier s on p.supplier_id = s.id
+        LEFT JOIN biz_category c on p.category_id = c.id
+    </select>
+
+    <select id="selectByNameWithCategoryAndSupplierAndProduct" resultMap="WithCategoryAndCategoryAndProduct">
+        select
+        <include refid="WithCategoryAndSupplierAndProduct_Column_List"/>
+        FROM
+        biz_purchase e
+        LEFT JOIN biz_product p ON e.product_id = p.id
+        LEFT JOIN biz_supplier s on p.supplier_id = s.id
+        LEFT JOIN biz_category c on p.category_id = c.id
+        WHERE p.product_name = #{productName}
+    </select>
+    <select id="selectByExample" resultMap="BaseResultMap" parameterType="com.sk.domain.PurchaseExample">
+        select
+        <if test="distinct">
+            distinct
+        </if>
+        <include refid="Base_Column_List"/>
+        from biz_purchase
+        <if test="_parameter != null">
+            <include refid="Example_Where_Clause"/>
+        </if>
+        <if test="orderByClause != null">
+            order by ${orderByClause}
+        </if>
+    </select>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer">
+        select
+        <include refid="Base_Column_List"/>
+        from biz_purchase
+        where id = #{id,jdbcType=INTEGER}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+        delete
+        from biz_purchase
+        where id = #{id,jdbcType=INTEGER}
+    </delete>
+    <delete id="deleteByExample" parameterType="com.sk.domain.PurchaseExample">
+        delete from biz_purchase
+        <if test="_parameter != null">
+            <include refid="Example_Where_Clause"/>
+        </if>
+    </delete>
+    <insert id="insert" parameterType="com.sk.domain.Purchase">
+        insert into biz_purchase (id, product_id, purchase_date,
+                                  pro_date, exp_date, purchase_price,
+                                  count, amount, receipt_img,
+                                  create_time, update_time, deleted)
+        values (#{id,jdbcType=INTEGER}, #{productId,jdbcType=INTEGER}, #{purchaseDate,jdbcType=VARCHAR},
+                #{proDate,jdbcType=VARCHAR}, #{expDate,jdbcType=VARCHAR}, #{purchasePrice,jdbcType=DECIMAL},
+                #{count,jdbcType=INTEGER}, #{amount,jdbcType=DECIMAL}, #{receiptImg,jdbcType=VARCHAR},
+                #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP}, #{deleted,jdbcType=BIT})
+    </insert>
+    <insert id="insertSelective" parameterType="com.sk.domain.Purchase">
+        insert into biz_purchase
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="productId != null">
+                product_id,
+            </if>
+            <if test="purchaseDate != null">
+                purchase_date,
+            </if>
+            <if test="proDate != null">
+                pro_date,
+            </if>
+            <if test="expDate != null">
+                exp_date,
+            </if>
+            <if test="purchasePrice != null">
+                purchase_price,
+            </if>
+            <if test="count != null">
+                count,
+            </if>
+            <if test="amount != null">
+                amount,
+            </if>
+            <if test="receiptImg != null">
+                receipt_img,
+            </if>
+            <if test="createTime != null">
+                create_time,
+            </if>
+            <if test="updateTime != null">
+                update_time,
+            </if>
+            <if test="deleted != null">
+                deleted,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=INTEGER},
+            </if>
+            <if test="productId != null">
+                #{productId,jdbcType=INTEGER},
+            </if>
+            <if test="purchaseDate != null">
+                #{purchaseDate,jdbcType=VARCHAR},
+            </if>
+            <if test="proDate != null">
+                #{proDate,jdbcType=VARCHAR},
+            </if>
+            <if test="expDate != null">
+                #{expDate,jdbcType=VARCHAR},
+            </if>
+            <if test="purchasePrice != null">
+                #{purchasePrice,jdbcType=DECIMAL},
+            </if>
+            <if test="count != null">
+                #{count,jdbcType=INTEGER},
+            </if>
+            <if test="amount != null">
+                #{amount,jdbcType=DECIMAL},
+            </if>
+            <if test="receiptImg != null">
+                #{receiptImg,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateTime != null">
+                #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="deleted != null">
+                #{deleted,jdbcType=BIT},
+            </if>
+        </trim>
+    </insert>
+    <select id="countByExample" parameterType="com.sk.domain.PurchaseExample" resultType="java.lang.Integer">
+        select count(*) from biz_purchase
+        <if test="_parameter != null">
+            <include refid="Example_Where_Clause"/>
+        </if>
+    </select>
+    <select id="selectByproductBarCode" resultMap="BaseResultMap" parameterType="string">
+        select
+        <include refid="Base_Column_List"/>
+        from biz_purchase
+        where id = #{id,jdbcType=INTEGER}
+    </select>
+
+    <update id="updateByExampleSelective" parameterType="map">
+        update biz_purchase
+        <set>
+            <if test="record.id != null">
+                id = #{record.id,jdbcType=INTEGER},
+            </if>
+            <if test="record.productId != null">
+                product_id = #{record.productId,jdbcType=INTEGER},
+            </if>
+            <if test="record.purchaseDate != null">
+                purchase_date = #{record.purchaseDate,jdbcType=VARCHAR},
+            </if>
+            <if test="record.proDate != null">
+                pro_date = #{record.proDate,jdbcType=VARCHAR},
+            </if>
+            <if test="record.expDate != null">
+                exp_date = #{record.expDate,jdbcType=VARCHAR},
+            </if>
+            <if test="record.purchasePrice != null">
+                purchase_price = #{record.purchasePrice,jdbcType=DECIMAL},
+            </if>
+            <if test="record.count != null">
+                count = #{record.count,jdbcType=INTEGER},
+            </if>
+            <if test="record.amount != null">
+                amount = #{record.amount,jdbcType=DECIMAL},
+            </if>
+            <if test="record.receiptImg != null">
+                receipt_img = #{record.receiptImg,jdbcType=VARCHAR},
+            </if>
+            <if test="record.createTime != null">
+                create_time = #{record.createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="record.updateTime != null">
+                update_time = #{record.updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="record.deleted != null">
+                deleted = #{record.deleted,jdbcType=BIT},
+            </if>
+        </set>
+        <if test="_parameter != null">
+            <include refid="Update_By_Example_Where_Clause"/>
+        </if>
+    </update>
+    <update id="updateByExample" parameterType="map">
+        update biz_purchase
+        set id = #{record.id,jdbcType=INTEGER},
+        product_id = #{record.productId,jdbcType=INTEGER},
+        purchase_date = #{record.purchaseDate,jdbcType=VARCHAR},
+        pro_date = #{record.proDate,jdbcType=VARCHAR},
+        exp_date = #{record.expDate,jdbcType=VARCHAR},
+        purchase_price = #{record.purchasePrice,jdbcType=DECIMAL},
+        count = #{record.count,jdbcType=INTEGER},
+        amount = #{record.amount,jdbcType=DECIMAL},
+        receipt_img = #{record.receiptImg,jdbcType=VARCHAR},
+        create_time = #{record.createTime,jdbcType=TIMESTAMP},
+        update_time = #{record.updateTime,jdbcType=TIMESTAMP},
+        deleted = #{record.deleted,jdbcType=BIT}
+        <if test="_parameter != null">
+            <include refid="Update_By_Example_Where_Clause"/>
+        </if>
+    </update>
+    <update id="updateByPrimaryKeySelective" parameterType="com.sk.domain.Purchase">
+        update biz_purchase
+        <set>
+            <if test="productId != null">
+                product_id = #{productId,jdbcType=INTEGER},
+            </if>
+            <if test="purchaseDate != null">
+                purchase_date = #{purchaseDate,jdbcType=VARCHAR},
+            </if>
+            <if test="proDate != null">
+                pro_date = #{proDate,jdbcType=VARCHAR},
+            </if>
+            <if test="expDate != null">
+                exp_date = #{expDate,jdbcType=VARCHAR},
+            </if>
+            <if test="purchasePrice != null">
+                purchase_price = #{purchasePrice,jdbcType=DECIMAL},
+            </if>
+            <if test="count != null">
+                count = #{count,jdbcType=INTEGER},
+            </if>
+            <if test="amount != null">
+                amount = #{amount,jdbcType=DECIMAL},
+            </if>
+            <if test="receiptImg != null">
+                receipt_img = #{receiptImg,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="deleted != null">
+                deleted = #{deleted,jdbcType=BIT},
+            </if>
+        </set>
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.sk.domain.Purchase">
+        update biz_purchase
+        set product_id     = #{productId,jdbcType=INTEGER},
+            purchase_date  = #{purchaseDate,jdbcType=VARCHAR},
+            pro_date       = #{proDate,jdbcType=VARCHAR},
+            exp_date       = #{expDate,jdbcType=VARCHAR},
+            purchase_price = #{purchasePrice,jdbcType=DECIMAL},
+            count          = #{count,jdbcType=INTEGER},
+            amount         = #{amount,jdbcType=DECIMAL},
+            receipt_img    = #{receiptImg,jdbcType=VARCHAR},
+            create_time    = #{createTime,jdbcType=TIMESTAMP},
+            update_time    = #{updateTime,jdbcType=TIMESTAMP},
+            deleted        = #{deleted,jdbcType=BIT}
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+</mapper>
